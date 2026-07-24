@@ -27,6 +27,11 @@ Data Layer (Drift/SQLite — tabel Transaksi, Kategori, HistorySaldoAkhir)
 | Notifikasi (opsional) | `flutter_local_notifications` | Untuk reminder harian (nice-to-have, iterasi berikutnya) |
 | Ikon | `lucide_icons` | Sesuai gaya line-icon yang ditentukan di Design.md §8 |
 
+### 2.2 Implementasi teknis 3 animasi (Design.md §6)
+- **Swipe-to-delete**: pakai widget bawaan Flutter `Dismissible` (bukan package pihak ketiga tambahan) — bungkus tiap baris transaksi di list dengan `Dismissible`, `direction: DismissDirection.endToStart`, `background` diisi kontainer Signal Coral + ikon trash. `onDismissed` memicu `repository.hapusTransaksi()` (SDD.md §4.3, termasuk recalculate berantai) — bukan cuma menghapus dari UI list.
+- **Transaksi baru slide-in + highlight**: pakai `AnimatedList` (dari Flutter) untuk list transaksi di Home, supaya insert item baru otomatis dapat animasi transisi bawaan, dikombinasikan dengan `AnimatedContainer`/`TweenAnimationBuilder` untuk transisi warna background highlight → transparent pada item yang baru saja di-insert.
+- **Transisi antar layar (slide horizontal)**: JANGAN pakai `Navigator.push` dengan `MaterialPageRoute` default (yang platform-dependent/kadang fade di Android). Pakai `PageRouteBuilder` custom dengan `SlideTransition` (offset dari `Offset(1.0, 0.0)` ke `Offset.zero`, curve `Curves.easeOut`, durasi ~250-300ms), dibuat sebagai satu helper function/extension yang dipakai konsisten di semua navigasi push (Home → Detail, Home → History, Home → Export Preview) — supaya tidak perlu ulang kode transisi di tiap tempat.
+
 ### 2.1 Font (offline, bundled — bukan google_fonts)
 Font (Fraunces, Plus Jakarta Sans, IBM Plex Mono) di-bundle langsung sebagai file lokal di `assets/fonts/`, didaftarkan di `pubspec.yaml` lewat `fonts:`. Pendekatan ini dipilih daripada package `google_fonts` supaya tampilan tetap konsisten walau HP belum pernah terkoneksi internet saat pertama kali app dibuka (offline-first, sesuai kebutuhan non-fungsional di PRD §8).
 
