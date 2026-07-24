@@ -299,6 +299,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('DEBUG_BUILD: 1. ScreenExportPreview build called.');
     final listAsync = ref.watch(transaksiListProvider);
     final sesiAsync = ref.watch(sesiAktifStreamProvider);
     final kategoriAsync = ref.watch(kategoriListProvider);
@@ -316,76 +317,113 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: sesiAsync.when(
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('Error: $e')),
-                      data: (sesi) => listAsync.when(
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (e, _) => Center(child: Text('Error: $e')),
-                        data: (transaksiList) => kategoriAsync.when(
+        child: () {
+          try {
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: sesiAsync.when(
                           loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (e, _) => Center(child: Text('Error: $e')),
-                          data: (kategoriList) => historyAsync.when(
+                          error: (e, stack) {
+                            print('DEBUG_BUILD: sesiAsync error: $e\n$stack');
+                            return Center(child: Text('Error Sesi: $e'));
+                          },
+                          data: (sesi) => listAsync.when(
                             loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (e, _) => Center(child: Text('Error: $e')),
-                            data: (historyList) {
-                              final kategoriMap = {
-                                for (final kat in kategoriList) kat.id: kat.nama
-                              };
-                              final lastHistory = historyList.firstOrNull;
-                              return _buildPreviewTable(
-                                sesi.saldoAwalInput,
-                                sesi.saldoMulai,
-                                lastHistory,
-                                transaksiList.reversed.toList(), // Chronologically ascending for report
-                                kategoriMap,
-                              );
+                            error: (e, stack) {
+                              print('DEBUG_BUILD: listAsync error: $e\n$stack');
+                              return Center(child: Text('Error Transaksi: $e'));
                             },
+                            data: (transaksiList) => kategoriAsync.when(
+                              loading: () => const Center(child: CircularProgressIndicator()),
+                              error: (e, stack) {
+                                print('DEBUG_BUILD: kategoriAsync error: $e\n$stack');
+                                return Center(child: Text('Error Kategori: $e'));
+                              },
+                              data: (kategoriList) => historyAsync.when(
+                                loading: () => const Center(child: CircularProgressIndicator()),
+                                error: (e, stack) {
+                                  print('DEBUG_BUILD: historyAsync error: $e\n$stack');
+                                  return Center(child: Text('Error Riwayat: $e'));
+                                },
+                                data: (historyList) {
+                                  try {
+                                    final kategoriMap = {
+                                      for (final kat in kategoriList) kat.id: kat.nama
+                                    };
+                                    final lastHistory = historyList.firstOrNull;
+                                    return _buildPreviewTable(
+                                      sesi.saldoAwalInput,
+                                      sesi.saldoMulai,
+                                      lastHistory,
+                                      transaksiList.reversed.toList(), // Chronologically ascending for report
+                                      kategoriMap,
+                                    );
+                                  } catch (e, stack) {
+                                    print('DEBUG_BUILD: Error building table: $e\n$stack');
+                                    return Center(
+                                      child: Text(
+                                        'Error Table: $e',
+                                        style: const TextStyle(color: Colors.red),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isExporting ? null : _exportExcel,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.emeraldPulse,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isExporting
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          'Ekspor & Bagikan (.xlsx)',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _isExporting ? null : _exportExcel,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.emeraldPulse,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 0,
+                      ),
+                      child: _isExporting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              'Ekspor & Bagikan (.xlsx)',
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } catch (e, stack) {
+            print('DEBUG_BUILD: Outer build error: $e\n$stack');
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  'Crash during build: $e\n$stack',
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
-            ),
-          ],
-        ),
+            );
+          }
+        }(),
       ),
     );
   }

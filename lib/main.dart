@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'data/database.dart';
 import 'providers/saldo_provider.dart';
@@ -13,8 +14,9 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return db;
 });
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   runApp(const ProviderScope(child: MyApp()));
 }
 
