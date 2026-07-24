@@ -37,4 +37,53 @@ class SaldoRepository {
       ),
     );
   }
+
+  Future<void> resetPeriode() async {
+    await _db.transaction(() async {
+      // 1. Get last transaction
+      final query = _db.select(_db.transaksi)
+        ..orderBy([(t) => OrderingTerm.desc(t.dibuatPada)])
+        ..limit(1);
+      final lastRows = await query.get();
+
+      double saldoAkhirFinal;
+      DateTime tanggalPeriode;
+
+      if (lastRows.isNotEmpty) {
+        saldoAkhirFinal = lastRows.first.saldoSetelah;
+        tanggalPeriode = lastRows.first.tanggal;
+      } else {
+        final sesi = await ambilSesiAktif();
+        saldoAkhirFinal = sesi.saldoMulai;
+        tanggalPeriode = DateTime.now();
+      }
+
+      // 2. Insert to history_saldo_akhir
+      await _db.into(_db.historySaldoAkhir).insert(
+        HistorySaldoAkhirCompanion.insert(
+          tanggalPeriode: tanggalPeriode,
+          saldoAkhir: saldoAkhirFinal,
+          dicatatPada: DateTime.now(),
+        ),
+      );
+
+      // 3. Delete all transactions
+      await _db.delete(_db.transaksi).go();
+
+      // 4. Reset sesi_aktif
+      await (_db.update(_db.sesiAktif)..where((t) => t.id.equals(1))).write(
+        const SesiAktifCompanion(
+          saldoAwalInput: Value(0),
+          saldoMulai: Value(0),
+          sudahDiisi: Value(false),
+        ),
+      );
+    });
+  }
+
+  Stream<List<HistorySaldoAkhirData>> watchHistory() {
+    return (_db.select(_db.historySaldoAkhir)
+          ..orderBy([(t) => OrderingTerm.desc(t.dicatatPada)]))
+        .watch();
+  }
 }

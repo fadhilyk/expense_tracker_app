@@ -14,3 +14,7 @@ final sesiAktifStreamProvider = StreamProvider<SesiAktifData>((ref) {
 final saldoAkhirTerakhirProvider = FutureProvider<double>((ref) {
   return ref.watch(saldoRepositoryProvider).ambilSaldoAkhirTerakhir();
 });
+
+final historyListProvider = StreamProvider<List<HistorySaldoAkhirData>>((ref) {
+  return ref.watch(saldoRepositoryProvider).watchHistory();
+});

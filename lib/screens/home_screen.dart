@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../providers/saldo_provider.dart';
 import '../providers/transaksi_provider.dart';
@@ -9,6 +10,7 @@ import '../widgets/saldo_card.dart';
 import '../widgets/transaksi_tile.dart';
 import 'detail_transaksi_screen.dart';
 import 'export_preview_screen.dart';
+import 'history_screen.dart';
 import 'tambah_transaksi_sheet.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -27,6 +29,103 @@ class HomeScreen extends ConsumerWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ExportPreviewScreen()),
+    );
+  }
+
+  void _bukaHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const HistoryScreen()),
+    );
+  }
+
+  void _tampilkanResetDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.ledgerCream,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Column(
+          children: [
+            Icon(
+              LucideIcons.alertTriangle,
+              color: AppColors.signalCoral,
+              size: 64,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Reset Periode',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Fraunces',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.inkNavy,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Pastikan sudah export laporan. Reset akan mengosongkan transaksi periode ini.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            color: AppColors.slateGrey,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        actions: [
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.slateGrey),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Batal',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.slateGrey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                ref.read(saldoRepositoryProvider).resetPeriode();
+                // Sesi stream in main.dart will trigger routing automatically
+                Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.signalCoral,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Ya, Reset',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -52,14 +151,16 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              // Placeholder for history screen
-            },
+            icon: const Icon(LucideIcons.history),
+            onPressed: () => _bukaHistory(context),
           ),
           IconButton(
-            icon: const Icon(Icons.ios_share),
+            icon: const Icon(LucideIcons.share2),
             onPressed: () => _bukaExport(context),
+          ),
+          IconButton(
+            icon: const Icon(LucideIcons.trash2),
+            onPressed: () => _tampilkanResetDialog(context, ref),
           ),
         ],
       ),
@@ -159,7 +260,7 @@ class HomeScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
         onPressed: () => _tambahTransaksi(context),
-        child: const Icon(Icons.add, size: 28),
+        child: const Icon(LucideIcons.plus, size: 28),
       ),
     );
   }

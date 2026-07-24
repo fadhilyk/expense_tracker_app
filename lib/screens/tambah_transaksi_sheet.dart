@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/database.dart';
 import '../providers/transaksi_provider.dart';
 import '../theme/app_theme.dart';
@@ -280,7 +281,7 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.calendar_today,
+                        LucideIcons.calendar,
                         color: AppColors.slateGrey,
                         size: 20,
                       ),
