@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/database.dart';
+import '../main.dart';
 import '../providers/saldo_provider.dart';
 import '../providers/transaksi_provider.dart';
 import '../services/excel_export_service.dart';
@@ -45,7 +46,18 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         for (final kat in kategoriList) kat.id: kat.nama
       };
 
+      final db = ref.read(databaseProvider);
+      final allHistory = await db.select(db.historySaldoAkhir).get();
+      print('DEBUG_EXPORT: 1. Isi tabel history_saldo_akhir langsung dari DB:');
+      for (final h in allHistory) {
+        print(' - ID: ${h.id}, tanggalPeriode: ${h.tanggalPeriode}, saldoAkhir: ${h.saldoAkhir}, dicatatPada: ${h.dicatatPada}');
+      }
+
+      final lastHistoryRepo = await ref.read(saldoRepositoryProvider).ambilSaldoAkhirTerakhir();
+      print('DEBUG_EXPORT: 2. Hasil ambilSaldoAkhirTerakhir dari repo (double): $lastHistoryRepo');
+
       final lastHistory = ref.read(historyListProvider).valueOrNull?.firstOrNull;
+      print('DEBUG_EXPORT: 2b. lastHistory from StreamProvider: $lastHistory');
 
       // 1. Generate excel file in temp directory
       final tempFile = await ExcelExportService.generateXlsx(
@@ -63,16 +75,21 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
       bool isSavedToPublicFolder = false;
 
       if (Platform.isAndroid) {
-        // Request Storage Permission
+        print('DEBUG_EXPORT: 4. Cek status permission.manageExternalStorage...');
         var status = await Permission.manageExternalStorage.status;
+        print('DEBUG_EXPORT: 4b. Status permission.manageExternalStorage saat ini: $status');
         if (!status.isGranted) {
+          print('DEBUG_EXPORT: 4c. Meminta permission.manageExternalStorage...');
           status = await Permission.manageExternalStorage.request();
+          print('DEBUG_EXPORT: 4d. Status setelah request permission.manageExternalStorage: $status');
         }
 
         if (!status.isGranted) {
-          // Try fallback
+          print('DEBUG_EXPORT: 4e. permission.manageExternalStorage tidak ter-grant. Mencoba fallback ke standard storage...');
           var fallbackStatus = await Permission.storage.request();
+          print('DEBUG_EXPORT: 4f. Status fallback storage: $fallbackStatus');
           if (!fallbackStatus.isGranted) {
+            print('DEBUG_EXPORT: 4g. Semua permission ditolak. Menampilkan permission error dialog...');
             if (mounted) {
               _showPermissionErrorDialog();
             }
@@ -80,15 +97,21 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
           }
         }
 
-        // Create LaporanPengeluaran directory
+        print('DEBUG_EXPORT: 5. Membuat folder LaporanPengeluaran...');
         const folderPath = '/storage/emulated/0/LaporanPengeluaran';
         final dir = Directory(folderPath);
         if (!await dir.exists()) {
+          print('DEBUG_EXPORT: 5b. Folder belum ada, mencoba membuat folder: $folderPath');
           await dir.create(recursive: true);
+          print('DEBUG_EXPORT: 5c. Pembuatan folder berhasil.');
+        } else {
+          print('DEBUG_EXPORT: 5d. Folder sudah ada.');
         }
 
         final targetPath = p.join(folderPath, p.basename(tempFile.path));
+        print('DEBUG_EXPORT: 6. Menyalin file dari temp ${tempFile.path} ke target $targetPath...');
         savedFile = await tempFile.copy(targetPath);
+        print('DEBUG_EXPORT: 6b. Penyalinan file berhasil.');
         isSavedToPublicFolder = true;
       }
 

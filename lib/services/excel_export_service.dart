@@ -75,8 +75,10 @@ class ExcelExportService {
     final List<List<CellValue>> rows = [];
     final List<CellStyle> rowStyles = [];
 
+    print('DEBUG_EXPORT: 3. ExcelService.generateXlsx - lastHistory is null? ${lastHistory == null}');
     // 2. Baris "SALDO AKHIR PER [tanggal periode sebelumnya]"
     if (lastHistory != null) {
+      print('DEBUG_EXPORT: 3b. ExcelService.generateXlsx - lastHistory values: tanggal: ${lastHistory.tanggalPeriode}, saldo: ${lastHistory.saldoAkhir}');
       final historyDateStr = formatTanggalLengkap(lastHistory.tanggalPeriode).toUpperCase();
       rows.add([
         IntCellValue(1),
