@@ -20,7 +20,6 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
   final _nominalController = TextEditingController();
   final _uraianController = TextEditingController();
   
-  bool _isPengeluaran = true;
   int? _selectedKategoriId;
   DateTime _selectedDate = DateTime.now();
 
@@ -29,9 +28,7 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
     super.initState();
     if (widget.editTransaksi != null) {
       final t = widget.editTransaksi!;
-      _isPengeluaran = t.pengeluaran > 0;
-      final nominal = _isPengeluaran ? t.pengeluaran : t.pemasukan;
-      _nominalController.text = 'Rp${_formatWithDots(nominal.toInt())}';
+      _nominalController.text = 'Rp${_formatWithDots(t.pengeluaran.toInt())}';
       _uraianController.text = t.uraian;
       _selectedKategoriId = t.kategoriId;
       _selectedDate = t.tanggal;
@@ -90,8 +87,7 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
     final repo = ref.read(transaksiRepositoryProvider);
     final isEdit = widget.editTransaksi != null;
 
-    final double pem = _isPengeluaran ? 0 : nominal;
-    final double peng = _isPengeluaran ? nominal : 0;
+    final double peng = nominal;
 
     if (isEdit) {
       repo.editTransaksi(
@@ -99,7 +95,6 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
         tanggal: _selectedDate,
         kategoriId: _selectedKategoriId!,
         uraian: _uraianController.text,
-        pemasukan: pem,
         pengeluaran: peng,
       );
     } else {
@@ -107,7 +102,6 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
         tanggal: _selectedDate,
         kategoriId: _selectedKategoriId!,
         uraian: _uraianController.text,
-        pemasukan: pem,
         pengeluaran: peng,
       );
     }
@@ -144,29 +138,6 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
               ),
               const SizedBox(height: 24),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: _ToggleButton(
-                      label: 'Pemasukan',
-                      active: !_isPengeluaran,
-                      color: AppColors.emeraldPulse,
-                      onTap: () => setState(() => _isPengeluaran = false),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ToggleButton(
-                      label: 'Pengeluaran',
-                      active: _isPengeluaran,
-                      color: AppColors.signalCoral,
-                      onTap: () => setState(() => _isPengeluaran = true),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
               Text(
                 'Kategori',
                 style: AppTypography.bodySmall.copyWith(
@@ -192,9 +163,7 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
                         ),
                       ),
                       selected: isSel,
-                      selectedColor: _isPengeluaran
-                          ? AppColors.signalCoral
-                          : AppColors.emeraldPulse,
+                      selectedColor: AppColors.signalCoral,
                       backgroundColor: Colors.white,
                       checkmarkColor: Colors.white,
                       shape: RoundedRectangleBorder(
@@ -319,9 +288,7 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
                 child: ElevatedButton(
                   onPressed: formValid ? _simpan : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isPengeluaran
-                        ? AppColors.signalCoral
-                        : AppColors.emeraldPulse,
+                    backgroundColor: AppColors.signalCoral,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey.shade300,
                     shape: RoundedRectangleBorder(
@@ -339,48 +306,6 @@ class _TambahTransaksiSheetState extends ConsumerState<TambahTransaksiSheet> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToggleButton extends StatelessWidget {
-  final String label;
-  final bool active;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ToggleButton({
-    required this.label,
-    required this.active,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: active ? color : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: active ? Colors.transparent : Colors.grey.shade300,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTypography.bodyMedium.copyWith(
-              color: active ? Colors.white : AppColors.slateGrey,
-              fontWeight: FontWeight.bold,
-            ),
           ),
         ),
       ),

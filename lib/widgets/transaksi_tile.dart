@@ -18,11 +18,7 @@ class TransaksiTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final adaPemasukan = transaksi.pemasukan > 0;
-    final nominal = adaPemasukan ? transaksi.pemasukan : transaksi.pengeluaran;
-    final warnaNominal =
-        adaPemasukan ? AppColors.emeraldPulse : AppColors.signalCoral;
-    final sign = adaPemasukan ? '+' : '-';
+    final nominal = transaksi.pengeluaran;
 
     return InkWell(
       onTap: onTap,
@@ -84,9 +80,9 @@ class TransaksiTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              '$sign${formatRupiah(nominal)}',
+              '-${formatRupiah(nominal)}',
               style: AppTypography.monoData.copyWith(
-                color: warnaNominal,
+                color: AppColors.signalCoral,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),

@@ -132,7 +132,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saldoBerjalan = ref.watch(saldoBerjalanProvider) ?? 0.0;
-    final totalPem = ref.watch(totalPemasukanProvider);
     final totalPeng = ref.watch(totalPengeluaranProvider);
     
     final transaksiAsync = ref.watch(transaksiListProvider);
@@ -143,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: AppColors.ledgerCream,
       appBar: AppBar(
         title: Text(
-          'Buku Kas',
+          'Catetin',
           style: AppTypography.displayMedium.copyWith(
             color: Colors.white,
             fontSize: 20,
@@ -171,7 +170,6 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16.0),
               child: SaldoCard(
                 saldo: saldoBerjalan,
-                totalPemasukan: totalPem,
                 totalPengeluaran: totalPeng,
               ),
             ),

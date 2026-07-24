@@ -1,7 +1,9 @@
 # PRD — Aplikasi Pencatat Pengeluaran Pribadi
 
+**Nama Aplikasi: Catetin**
+
 ## 1. Ringkasan Produk
-Aplikasi mobile untuk pencatatan pengeluaran pribadi/operasional yang dipakai sendiri (bukan untuk publik), dijalankan secara **lokal** di HP tanpa perlu Play Store, dan hasil pencatatannya bisa diekspor ke file Excel (.xlsx) dengan format yang sudah baku (sesuai template yang sudah ada).
+Aplikasi mobile untuk pencatatan pengeluaran pribadi/operasional yang dipakai sendiri (bukan untuk publik), dijalankan secara **lokal** di HP tanpa perlu Play Store, dan hasil pencatatannya bisa diekspor ke file Excel (.xlsx) dengan format yang sudah baku (sesuai template yang sudah ada). Nama aplikasi ini adalah **Catetin** — nama ini dipakai di judul AppBar, nama app di launcher/home screen HP, dan `pubspec.yaml` (`name:` dan label aplikasi).
 
 ## 2. Latar Belakang & Masalah
 Saat ini pencatatan pengeluaran dilakukan manual di Excel. Prosesnya kurang praktis saat transaksi terjadi di lapangan (misal saat perjalanan dinas, isi bensin, makan siang, dll) karena harus buka laptop/file Excel. Dibutuhkan cara mencatat yang cepat lewat HP, namun hasil akhirnya tetap harus bisa masuk ke format Excel yang sudah ada agar tidak mengubah alur pelaporan yang berjalan.
@@ -40,12 +42,12 @@ Satu pengguna (pemilik aplikasi sendiri) — aplikasi single-user, tidak perlu s
 - Hasil penjumlahan ini ditampilkan sebagai **preview real-time** di layar input (lihat Design.md §5.2), ter-update begitu pengguna mengetik nominal Saldo Awal, sebelum tombol "Mulai Periode Ini" ditekan.
 
 ### 7.2 Pencatatan Transaksi
-Setiap transaksi berisi:
+Setiap transaksi harian berisi:
 - **Tanggal** (default hari ini, bisa diubah)
 - **Kategori** (dropdown, daftar tetap — lihat 7.5)
 - **Uraian** (teks bebas, deskripsi detail transaksi)
-- **Nominal** — bisa masuk sebagai Pemasukan atau Pengeluaran
-- Saldo berjalan otomatis ter-update setiap transaksi baru disimpan (saldo sebelumnya − pengeluaran + pemasukan).
+- **Nominal Pengeluaran** — transaksi harian yang dicatat lewat form Tambah Transaksi **hanya berupa Pengeluaran**, tidak ada lagi toggle Pemasukan/Pengeluaran. Ini karena Pemasukan cuma terjadi sekali di awal tiap periode lewat alur Saldo Awal (§7.1), bukan bagian dari pencatatan harian.
+- Saldo berjalan otomatis ter-update setiap transaksi baru disimpan (saldo sebelumnya − pengeluaran).
 - **Saldo boleh minus** — tidak ada validasi yang menolak/memblokir transaksi walau saldo jadi negatif.
 
 ### 7.3 Tampilan Riwayat Transaksi (Home)
@@ -62,6 +64,7 @@ Setiap transaksi berisi:
   3. Baris **"PEMASUKAN DARI FINANCE"** — format sel sama seperti baris di atas (No kosong, label merge Tanggal-Uraian, Pengeluaran kosong), background hijau muda, kolom Pemasukan diisi nominal Saldo Awal yang diinput, kolom Saldo diisi hasil penjumlahan (saldo mulai periode).
   4. Baris-baris transaksi biasa (dengan nomor urut di kolom No), berurutan sesuai tanggal.
   5. Baris total **"SALDO AKHIR PER [tanggal transaksi terakhir]"** — format sel sama (No kosong, label merge), background kuning, kolom Pemasukan diisi Total Pemasukan, kolom Pengeluaran diisi Total Pengeluaran, kolom Saldo diisi Saldo Akhir final.
+- **Format angka**: semua nominal di kolom Pemasukan, Pengeluaran, dan Saldo ditampilkan dalam format mata uang Rupiah dengan pemisah ribuan, contoh `Rp 5.000.000` (bukan angka mentah `5000000`). Nilai negatif ditampilkan dengan tanda minus di depan "Rp", contoh `-Rp 1.246.000`, sesuai tampilan di template asli.
 - File tersimpan ke folder Download HP, dengan nama `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx` (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`), dan bisa langsung dibagikan (share) ke WhatsApp/Drive/Email.
 - Catatan: belum ada file .xlsx asli sebagai rujukan pasti — layout warna/kolom mengikuti deskripsi & screenshot template yang sudah dibahas di dokumen ini. Kalau nanti hasilnya kurang pas dibanding template asli, akan disesuaikan ulang.
 

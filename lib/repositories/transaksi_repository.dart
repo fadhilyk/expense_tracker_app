@@ -29,21 +29,20 @@ class TransaksiRepository {
     required DateTime tanggal,
     required int kategoriId,
     required String uraian,
-    required double pemasukan,
     required double pengeluaran,
   }) async {
     final semua = await ambilSemuaTransaksiUrut();
     final saldoPrev = semua.isEmpty
         ? await _ambilSaldoMulai()
         : semua.last.saldoSetelah;
-    final saldoSetelah = saldoPrev - pengeluaran + pemasukan;
+    final saldoSetelah = saldoPrev - pengeluaran;
 
     await _db.into(_db.transaksi).insert(
       TransaksiCompanion.insert(
         tanggal: tanggal,
         kategoriId: kategoriId,
         uraian: uraian,
-        pemasukan: Value(pemasukan),
+        pemasukan: const Value(0),
         pengeluaran: Value(pengeluaran),
         saldoSetelah: saldoSetelah,
         dibuatPada: DateTime.now(),
@@ -56,7 +55,6 @@ class TransaksiRepository {
     required DateTime tanggal,
     required int kategoriId,
     required String uraian,
-    required double pemasukan,
     required double pengeluaran,
   }) async {
     await (_db.update(_db.transaksi)..where((t) => t.id.equals(id))).write(
@@ -64,7 +62,7 @@ class TransaksiRepository {
         tanggal: Value(tanggal),
         kategoriId: Value(kategoriId),
         uraian: Value(uraian),
-        pemasukan: Value(pemasukan),
+        pemasukan: const Value(0),
         pengeluaran: Value(pengeluaran),
       ),
     );
@@ -82,7 +80,7 @@ class TransaksiRepository {
 
     double saldoPrev = saldoMulai;
     for (final trx in semua) {
-      final saldoBaru = saldoPrev - trx.pengeluaran + trx.pemasukan;
+      final saldoBaru = saldoPrev - trx.pengeluaran;
       if (saldoBaru != trx.saldoSetelah) {
         await (_db.update(_db.transaksi)..where((t) => t.id.equals(trx.id)))
             .write(TransaksiCompanion(saldoSetelah: Value(saldoBaru)));

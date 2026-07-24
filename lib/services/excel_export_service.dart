@@ -30,6 +30,10 @@ class ExcelExportService {
     final greenBgColor = ExcelColor.fromHexString('FFD1EAE0');
     final yellowBgColor = ExcelColor.fromHexString('FFFCEFCB');
 
+    final rupiahFormat = const CustomNumericNumFormat(
+      formatCode: '"Rp" #,##0;-"Rp" #,##0',
+    );
+
     // Text style
     final headerStyle = CellStyle(
       backgroundColorHex: navyColor,
@@ -44,14 +48,32 @@ class ExcelExportService {
       fontFamily: getFontFamily(FontFamily.Calibri),
     );
 
+    final startRowRupiahStyle = CellStyle(
+      backgroundColorHex: greenBgColor,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      numberFormat: rupiahFormat,
+    );
+
     final totalRowStyle = CellStyle(
       backgroundColorHex: yellowBgColor,
       fontFamily: getFontFamily(FontFamily.Calibri),
       bold: true,
     );
 
+    final totalRowRupiahStyle = CellStyle(
+      backgroundColorHex: yellowBgColor,
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      bold: true,
+      numberFormat: rupiahFormat,
+    );
+
     final defaultStyle = CellStyle(
       fontFamily: getFontFamily(FontFamily.Calibri),
+    );
+
+    final defaultRupiahStyle = CellStyle(
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      numberFormat: rupiahFormat,
     );
 
     // Headers
@@ -94,6 +116,7 @@ class ExcelExportService {
       
       final saldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
       saldoCell.value = DoubleCellValue(lastHistory.saldoAkhir);
+      saldoCell.cellStyle = startRowRupiahStyle;
       
       currentRowIndex++;
     }
@@ -115,9 +138,11 @@ class ExcelExportService {
     
     final financePemCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRowIndex));
     financePemCell.value = DoubleCellValue(saldoAwalInput);
+    financePemCell.cellStyle = startRowRupiahStyle;
     
     final financeSaldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
     financeSaldoCell.value = DoubleCellValue(saldoMulai);
+    financeSaldoCell.cellStyle = startRowRupiahStyle;
     
     currentRowIndex++;
 
@@ -147,17 +172,17 @@ class ExcelExportService {
       if (t.pemasukan > 0) {
         cellPem.value = DoubleCellValue(t.pemasukan);
       }
-      cellPem.cellStyle = defaultStyle;
+      cellPem.cellStyle = defaultRupiahStyle;
 
       final cellPeng = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRowIndex));
       if (t.pengeluaran > 0) {
         cellPeng.value = DoubleCellValue(t.pengeluaran);
       }
-      cellPeng.cellStyle = defaultStyle;
+      cellPeng.cellStyle = defaultRupiahStyle;
 
       final cellSaldo = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
       cellSaldo.value = DoubleCellValue(t.saldoSetelah);
-      cellSaldo.cellStyle = defaultStyle;
+      cellSaldo.cellStyle = defaultRupiahStyle;
 
       currentRowIndex++;
     }
@@ -182,12 +207,15 @@ class ExcelExportService {
 
     final totalPemCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRowIndex));
     totalPemCell.value = DoubleCellValue(saldoAwalInput + totalPemasukan);
+    totalPemCell.cellStyle = totalRowRupiahStyle;
 
     final totalPengCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRowIndex));
     totalPengCell.value = DoubleCellValue(totalPengeluaran);
+    totalPengCell.cellStyle = totalRowRupiahStyle;
 
     final totalSaldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
     totalSaldoCell.value = DoubleCellValue(saldoAkhir);
+    totalSaldoCell.cellStyle = totalRowRupiahStyle;
 
     // Auto-fit columns
     sheet.setColumnWidth(0, 8.0);  // No

@@ -1,8 +1,8 @@
 import 'package:drift/native.dart';
 import 'package:test/test.dart';
-import 'package:expense_tracker_app/data/database.dart';
-import 'package:expense_tracker_app/repositories/saldo_repository.dart';
-import 'package:expense_tracker_app/widgets/rupiah_input_formatter.dart';
+import 'package:catetin/data/database.dart';
+import 'package:catetin/repositories/saldo_repository.dart';
+import 'package:catetin/widgets/rupiah_input_formatter.dart';
 
 void main() {
   late AppDatabase db;

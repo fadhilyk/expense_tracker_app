@@ -1,8 +1,10 @@
 # Design.md — Spesifikasi Desain UI/UX
 ## Aplikasi Pencatat Pengeluaran Pribadi
 
-## 1. Arah Desain: "Buku Kas Digital"
-Aplikasi ini pada dasarnya menggantikan buku kas/Excel manual, jadi konsep visualnya diangkat dari budaya **pembukuan kantor Indonesia** — bukan tema "fintech generik" biasa. Elemen seperti stempel tanggal, garis ledger, dan angka yang rapi sejajar (seperti kolom Excel) jadi identitas visual utama, dibalut dengan sentuhan modern supaya tetap terasa premium dan "memanjakan mata", bukan kaku seperti spreadsheet.
+**Nama Aplikasi: Catetin** — ini yang ditampilkan sebagai judul di AppBar (pojok kiri atas Home) dan nama app di launcher HP, BUKAN "Buku Kas".
+
+## 1. Arah Desain: "Buku Kas Digital" (nama konsep, bukan nama aplikasi)
+Aplikasi ini pada dasarnya menggantikan buku kas/Excel manual, jadi konsep visualnya diangkat dari budaya **pembukuan kantor Indonesia** — bukan tema "fintech generik" biasa. Elemen seperti stempel tanggal, garis ledger, dan angka yang rapi sejajar (seperti kolom Excel) jadi identitas visual utama, dibalut dengan sentuhan modern supaya tetap terasa premium dan "memanjakan mata", bukan kaku seperti spreadsheet. Catatan: "Buku Kas Digital" di sini cuma nama konsep/filosofi desain — nama aplikasi yang sebenarnya tetap **Catetin** (lihat di atas).
 
 ## 2. Palet Warna
 | Nama | Hex | Fungsi |
@@ -54,6 +56,7 @@ Stempel ini juga muncul di riwayat History Saldo Akhir, menandai tiap periode ya
 ```
 - List transaksi memakai **garis pembatas tipis** (bukan card bertumpuk) supaya nuansa "buku besar" tetap terasa, tapi tetap modern lewat spacing lega dan warna kategori sebagai aksen kecil (dot warna di kiri tiap baris, konsisten per kategori).
 - Tap baris transaksi → buka detail/edit.
+- **AppBar**: judul di pojok kiri atas menampilkan teks **"Catetin"** (nama aplikasi), pakai font Display (Fraunces), bukan teks generik "Buku Kas" atau AppBar title default. Opsional: tambahkan ikon stempel kecil (dari `lucide_icons`) di sebelah kiri teks sebagai mini-logo.
 
 ### 5.2 Form Saldo Awal (muncul di awal / setelah reset)
 - Layar penuh, background Ledger Cream, dengan kartu "amplop" di tengah: menampilkan Saldo Akhir periode lalu (kalau ada) sebagai referensi redup, lalu input besar untuk Saldo Awal baru dengan keypad angka custom (format otomatis jadi "Rp 5.000.000" saat mengetik).
@@ -62,7 +65,7 @@ Stempel ini juga muncul di riwayat History Saldo Akhir, menandai tiap periode ya
 
 ### 5.3 Tambah Transaksi
 - Bottom sheet (bukan halaman penuh) supaya cepat diisi tanpa kehilangan konteks Home di belakang.
-- Toggle switch besar "Pemasukan / Pengeluaran" di atas (default Pengeluaran, karena lebih sering dipakai), warna toggle berubah Emerald/Coral sesuai pilihan.
+- **Tidak ada toggle Pemasukan/Pengeluaran** — form ini murni untuk mencatat Pengeluaran harian (Pemasukan hanya terjadi lewat alur Saldo Awal di §5.2). Warna aksen form tetap Coral/Signal Coral untuk menegaskan konteks "pengeluaran".
 - Dropdown Kategori bergaya "chip" (bisa juga grid pilihan chip warna-warni sesuai 9 kategori) agar lebih cepat dipilih dibanding dropdown biasa.
 - Field Uraian & Tanggal (date picker bergaya kalender minimal).
 - Tombol "Simpan Transaksi".

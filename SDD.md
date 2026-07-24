@@ -83,9 +83,9 @@ Ini murni penjumlahan bertanda: kalau `saldo_akhir_terakhir` negatif, otomatis m
 
 ### 4.2 Saat mencatat transaksi baru
 ```
-saldo_baru = saldo_terakhir_saat_ini - pengeluaran + pemasukan
+saldo_baru = saldo_terakhir_saat_ini - pengeluaran
 ```
-`saldo_terakhir_saat_ini` diambil dari transaksi terakhir yang tersimpan (`saldo_setelah`), atau dari `saldo_mulai` kalau ini transaksi pertama di periode berjalan. Tidak ada validasi yang menolak saldo negatif.
+Transaksi harian dari form Tambah Transaksi hanya berupa **Pengeluaran** (kolom `pemasukan` pada tabel `transaksi` tidak dipakai lagi untuk input harian — tetap ada di skema untuk kompatibilitas/masa depan, tapi selalu 0 pada baris transaksi biasa). `saldo_terakhir_saat_ini` diambil dari transaksi terakhir yang tersimpan (`saldo_setelah`), atau dari `saldo_mulai` kalau ini transaksi pertama di periode berjalan. Tidak ada validasi yang menolak saldo negatif.
 
 ### 4.3 Saat edit atau hapus transaksi
 Transaksi individual bisa diedit (ubah tanggal/kategori/uraian/nominal) atau dihapus dari layar detail (dibuka lewat tap baris transaksi, lihat Design.md §5.1). Karena tiap baris menyimpan snapshot `saldo_setelah`, operasi ini butuh **recalculate berantai**:
@@ -148,6 +148,14 @@ User tekan Export → repository.ambilDataUntukExport()
       5. Baris total "SALDO AKHIR PER [tanggal transaksi terakhir]" (kuning) — format sel sama
          seperti poin 2 (No kosong, merge Tanggal-Uraian), kolom Pemasukan = Total Pemasukan,
          Pengeluaran = Total Pengeluaran, Saldo = Saldo Akhir final.
+
+  **Format angka Rupiah**: semua sel di kolom Pemasukan, Pengeluaran, dan Saldo memakai custom
+  number format Excel, BUKAN angka polos. Set `CellStyle.numberFormat` (atau setara di package
+  `excel`) ke pola custom sejenis `"Rp" #,##0;-"Rp" #,##0` — supaya nilai tersimpan tetap berupa
+  angka murni (bisa dihitung ulang di Excel/Sheets kalau perlu), tapi TAMPILANNYA otomatis jadi
+  `Rp 5.000.000` atau `-Rp 1.246.000` untuk nilai negatif. Jangan format manual jadi string teks
+  ("Rp " + angka.toString()) karena itu akan merusak tipe data sel (jadi teks, bukan angka) dan
+  bikin kolom Saldo tidak bisa dihitung ulang / auto-sum di Excel.
   → simpan ke path Download dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
     (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
   → tampilkan opsi share

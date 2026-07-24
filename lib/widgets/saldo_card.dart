@@ -5,13 +5,11 @@ import '../utils/formatters.dart';
 
 class SaldoCard extends StatelessWidget {
   final double saldo;
-  final double totalPemasukan;
   final double totalPengeluaran;
 
   const SaldoCard({
     super.key,
     required this.saldo,
-    required this.totalPemasukan,
     required this.totalPengeluaran,
   });
 
@@ -49,13 +47,6 @@ class SaldoCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _InfoKecil(
-                    label: 'Pemasukan',
-                    nominal: totalPemasukan,
-                    icon: '↑',
-                    warna: AppColors.emeraldPulse,
-                  ),
-                  const SizedBox(width: 24),
                   _InfoKecil(
                     label: 'Pengeluaran',
                     nominal: totalPengeluaran,

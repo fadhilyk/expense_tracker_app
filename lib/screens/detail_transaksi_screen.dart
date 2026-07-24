@@ -125,8 +125,7 @@ class DetailTransaksiScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPemasukan = transaksi.pemasukan > 0;
-    final nominal = isPemasukan ? transaksi.pemasukan : transaksi.pengeluaran;
+    final nominal = transaksi.pengeluaran;
 
     return Scaffold(
       backgroundColor: AppColors.ledgerCream,
@@ -189,18 +188,14 @@ class DetailTransaksiScreen extends ConsumerWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: (isPemasukan
-                                    ? AppColors.emeraldPulse
-                                    : AppColors.signalCoral)
+                            color: AppColors.signalCoral
                                 .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Text(
-                            isPemasukan ? 'Pemasukan' : 'Pengeluaran',
+                            'Pengeluaran',
                             style: AppTypography.bodySmall.copyWith(
-                              color: isPemasukan
-                                  ? AppColors.emeraldPulse
-                                  : AppColors.signalCoral,
+                              color: AppColors.signalCoral,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -220,9 +215,7 @@ class DetailTransaksiScreen extends ConsumerWidget {
                       style: AppTypography.monoData.copyWith(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: isPemasukan
-                            ? AppColors.emeraldPulse
-                            : AppColors.signalCoral,
+                        color: AppColors.signalCoral,
                       ),
                     ),
                     const SizedBox(height: 24),
