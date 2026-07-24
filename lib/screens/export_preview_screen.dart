@@ -46,18 +46,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         for (final kat in kategoriList) kat.id: kat.nama
       };
 
-      final db = ref.read(databaseProvider);
-      final allHistory = await db.select(db.historySaldoAkhir).get();
-      print('DEBUG_EXPORT: 1. Isi tabel history_saldo_akhir langsung dari DB:');
-      for (final h in allHistory) {
-        print(' - ID: ${h.id}, tanggalPeriode: ${h.tanggalPeriode}, saldoAkhir: ${h.saldoAkhir}, dicatatPada: ${h.dicatatPada}');
-      }
-
-      final lastHistoryRepo = await ref.read(saldoRepositoryProvider).ambilSaldoAkhirTerakhir();
-      print('DEBUG_EXPORT: 2. Hasil ambilSaldoAkhirTerakhir dari repo (double): $lastHistoryRepo');
-
       final lastHistory = ref.read(historyListProvider).valueOrNull?.firstOrNull;
-      print('DEBUG_EXPORT: 2b. lastHistory from StreamProvider: $lastHistory');
 
       // 1. Generate excel file in temp directory
       final tempFile = await ExcelExportService.generateXlsx(
@@ -75,21 +64,14 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
       bool isSavedToPublicFolder = false;
 
       if (Platform.isAndroid) {
-        print('DEBUG_EXPORT: 4. Cek status permission.manageExternalStorage...');
         var status = await Permission.manageExternalStorage.status;
-        print('DEBUG_EXPORT: 4b. Status permission.manageExternalStorage saat ini: $status');
         if (!status.isGranted) {
-          print('DEBUG_EXPORT: 4c. Meminta permission.manageExternalStorage...');
           status = await Permission.manageExternalStorage.request();
-          print('DEBUG_EXPORT: 4d. Status setelah request permission.manageExternalStorage: $status');
         }
 
         if (!status.isGranted) {
-          print('DEBUG_EXPORT: 4e. permission.manageExternalStorage tidak ter-grant. Mencoba fallback ke standard storage...');
           var fallbackStatus = await Permission.storage.request();
-          print('DEBUG_EXPORT: 4f. Status fallback storage: $fallbackStatus');
           if (!fallbackStatus.isGranted) {
-            print('DEBUG_EXPORT: 4g. Semua permission ditolak. Menampilkan permission error dialog...');
             if (mounted) {
               _showPermissionErrorDialog();
             }
@@ -97,21 +79,14 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
           }
         }
 
-        print('DEBUG_EXPORT: 5. Membuat folder LaporanPengeluaran...');
         const folderPath = '/storage/emulated/0/LaporanPengeluaran';
         final dir = Directory(folderPath);
         if (!await dir.exists()) {
-          print('DEBUG_EXPORT: 5b. Folder belum ada, mencoba membuat folder: $folderPath');
           await dir.create(recursive: true);
-          print('DEBUG_EXPORT: 5c. Pembuatan folder berhasil.');
-        } else {
-          print('DEBUG_EXPORT: 5d. Folder sudah ada.');
         }
 
         final targetPath = p.join(folderPath, p.basename(tempFile.path));
-        print('DEBUG_EXPORT: 6. Menyalin file dari temp ${tempFile.path} ke target $targetPath...');
         savedFile = await tempFile.copy(targetPath);
-        print('DEBUG_EXPORT: 6b. Penyalinan file berhasil.');
         isSavedToPublicFolder = true;
       }
 
@@ -299,7 +274,6 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('DEBUG_BUILD: 1. ScreenExportPreview build called.');
     final listAsync = ref.watch(transaksiListProvider);
     final sesiAsync = ref.watch(sesiAktifStreamProvider);
     final kategoriAsync = ref.watch(kategoriListProvider);
@@ -330,28 +304,16 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: sesiAsync.when(
                           loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (e, stack) {
-                            print('DEBUG_BUILD: sesiAsync error: $e\n$stack');
-                            return Center(child: Text('Error Sesi: $e'));
-                          },
+                          error: (e, stack) => Center(child: Text('Error Sesi: $e')),
                           data: (sesi) => listAsync.when(
                             loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (e, stack) {
-                              print('DEBUG_BUILD: listAsync error: $e\n$stack');
-                              return Center(child: Text('Error Transaksi: $e'));
-                            },
+                            error: (e, stack) => Center(child: Text('Error Transaksi: $e')),
                             data: (transaksiList) => kategoriAsync.when(
                               loading: () => const Center(child: CircularProgressIndicator()),
-                              error: (e, stack) {
-                                print('DEBUG_BUILD: kategoriAsync error: $e\n$stack');
-                                return Center(child: Text('Error Kategori: $e'));
-                              },
+                              error: (e, stack) => Center(child: Text('Error Kategori: $e')),
                               data: (kategoriList) => historyAsync.when(
                                 loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (e, stack) {
-                                  print('DEBUG_BUILD: historyAsync error: $e\n$stack');
-                                  return Center(child: Text('Error Riwayat: $e'));
-                                },
+                                error: (e, stack) => Center(child: Text('Error Riwayat: $e')),
                                 data: (historyList) {
                                   try {
                                     final kategoriMap = {
@@ -365,8 +327,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
                                       transaksiList.reversed.toList(), // Chronologically ascending for report
                                       kategoriMap,
                                     );
-                                  } catch (e, stack) {
-                                    print('DEBUG_BUILD: Error building table: $e\n$stack');
+                                  } catch (e) {
                                     return Center(
                                       child: Text(
                                         'Error Table: $e',
@@ -411,13 +372,12 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
                 ),
               ],
             );
-          } catch (e, stack) {
-            print('DEBUG_BUILD: Outer build error: $e\n$stack');
+          } catch (e) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  'Crash during build: $e\n$stack',
+                  'Crash during build: $e',
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
@@ -471,14 +431,14 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
       final historyDateStr = formatTanggalLengkap(lastHistory.tanggalPeriode).toUpperCase();
       tableRows.add(
         TableRow(
-          decoration: const BoxDecoration(color: Colors.white),
+          decoration: BoxDecoration(color: startRowBg),
           children: [
-            _buildCell('1', alignCenter: true),
-            _buildCell('-'),
-            _buildCell('SALDO AKHIR PER $historyDateStr'),
-            _buildCell('Referensi Saldo Akhir Lalu'),
-            _buildCell(formatRupiah(0.0), isMono: true),
-            _buildCell(formatRupiah(0.0), isMono: true),
+            _buildCell('', alignCenter: true),
+            _buildCell(''),
+            _buildCell('SALDO AKHIR PER $historyDateStr', isBold: true),
+            _buildCell(''),
+            _buildCell(''),
+            _buildCell(''),
             _buildCell(formatRupiah(lastHistory.saldoAkhir), isMono: true),
           ],
         ),
@@ -486,17 +446,16 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
     }
 
     // 3. Baris "PEMASUKAN DARI FINANCE"
-    final financeRowNo = lastHistory != null ? 2 : 1;
     tableRows.add(
       TableRow(
         decoration: BoxDecoration(color: startRowBg),
         children: [
-          _buildCell(financeRowNo.toString(), alignCenter: true),
-          _buildCell('-'),
-          _buildCell('PEMASUKAN DARI FINANCE'),
-          _buildCell('Saldo Awal Periode'),
+          _buildCell('', alignCenter: true),
+          _buildCell(''),
+          _buildCell('PEMASUKAN DARI FINANCE', isBold: true),
+          _buildCell(''),
           _buildCell(formatRupiah(saldoAwalInput), isMono: true),
-          _buildCell(formatRupiah(0.0), isMono: true),
+          _buildCell(''),
           _buildCell(formatRupiah(saldoMulai), isMono: true),
         ],
       ),
@@ -505,7 +464,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
     // 4. Transaksi rows
     for (var i = 0; i < transaksiList.length; i++) {
       final t = transaksiList[i];
-      final no = (lastHistory != null ? 3 : 2) + i;
+      final no = i + 1;
       tableRows.add(
         TableRow(
           decoration: const BoxDecoration(color: Colors.white),
@@ -514,8 +473,8 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
             _buildCell(DateFormat('dd/MM/yyyy').format(t.tanggal)),
             _buildCell(kategoriMap[t.kategoriId] ?? '-'),
             _buildCell(t.uraian),
-            _buildCell(formatRupiah(t.pemasukan), isMono: true),
-            _buildCell(formatRupiah(t.pengeluaran), isMono: true),
+            _buildCell(t.pemasukan > 0 ? formatRupiah(t.pemasukan) : '', isMono: true),
+            _buildCell(t.pengeluaran > 0 ? formatRupiah(t.pengeluaran) : '', isMono: true),
             _buildCell(formatRupiah(t.saldoSetelah), isMono: true),
           ],
         ),

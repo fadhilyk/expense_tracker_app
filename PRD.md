@@ -58,10 +58,10 @@ Setiap transaksi berisi:
 - Tombol "Export" menghasilkan file .xlsx dengan struktur kolom & tata letak identik dengan template yang sudah ada (header biru, baris highlight hijau untuk saldo awal, baris kuning untuk total di akhir).
 - Urutan baris di dalam file, persis sesuai template asli:
   1. Header kolom (No, Tanggal, Keterangan, Uraian, Pemasukan, Pengeluaran, Saldo) — background biru.
-  2. Baris **"SALDO AKHIR PER [tanggal periode sebelumnya]"** — baris referensi dari `history_saldo_akhir` terakhir (kalau belum ada history sama sekali, baris ini boleh dilewati). Nominal saldo akhir sebelumnya ditampilkan di kolom Saldo.
-  3. Baris **"PEMASUKAN DARI FINANCE"** — background hijau muda, nominal Saldo Awal yang diinput di kolom Pemasukan, hasil penjumlahan (saldo mulai periode) di kolom Saldo.
-  4. Baris-baris transaksi berjalan, berurutan sesuai tanggal.
-  5. Baris **"SALDO AKHIR PER [tanggal transaksi terakhir]"** — background kuning, berisi Total Pemasukan, Total Pengeluaran, dan Saldo Akhir final.
+  2. Baris **"SALDO AKHIR PER [tanggal periode sebelumnya]"** — **bukan baris transaksi**: kolom No dikosongkan (tanpa nomor urut), teks label ditulis menyatu/merge dari kolom Tanggal sampai Uraian (bukan dipecah per kolom, bukan diisi ke kolom Uraian secara terpisah), kolom Pemasukan & Pengeluaran dikosongkan, kolom Saldo diisi nominal saldo akhir sebelumnya. Background hijau muda. (Kalau belum ada history sama sekali, baris ini dilewati.)
+  3. Baris **"PEMASUKAN DARI FINANCE"** — format sel sama seperti baris di atas (No kosong, label merge Tanggal-Uraian, Pengeluaran kosong), background hijau muda, kolom Pemasukan diisi nominal Saldo Awal yang diinput, kolom Saldo diisi hasil penjumlahan (saldo mulai periode).
+  4. Baris-baris transaksi biasa (dengan nomor urut di kolom No), berurutan sesuai tanggal.
+  5. Baris total **"SALDO AKHIR PER [tanggal transaksi terakhir]"** — format sel sama (No kosong, label merge), background kuning, kolom Pemasukan diisi Total Pemasukan, kolom Pengeluaran diisi Total Pengeluaran, kolom Saldo diisi Saldo Akhir final.
 - File tersimpan ke folder Download HP, dengan nama `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx` (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`), dan bisa langsung dibagikan (share) ke WhatsApp/Drive/Email.
 - Catatan: belum ada file .xlsx asli sebagai rujukan pasti — layout warna/kolom mengikuti deskripsi & screenshot template yang sudah dibahas di dokumen ini. Kalau nanti hasilnya kurang pas dibanding template asli, akan disesuaikan ulang.
 

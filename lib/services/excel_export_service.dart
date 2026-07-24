@@ -72,87 +72,122 @@ class ExcelExportService {
     }
 
     final dateFormat = DateFormat('dd/MM/yyyy');
-    final List<List<CellValue>> rows = [];
-    final List<CellStyle> rowStyles = [];
+    var currentRowIndex = 1;
 
-    print('DEBUG_EXPORT: 3. ExcelService.generateXlsx - lastHistory is null? ${lastHistory == null}');
     // 2. Baris "SALDO AKHIR PER [tanggal periode sebelumnya]"
     if (lastHistory != null) {
-      print('DEBUG_EXPORT: 3b. ExcelService.generateXlsx - lastHistory values: tanggal: ${lastHistory.tanggalPeriode}, saldo: ${lastHistory.saldoAkhir}');
       final historyDateStr = formatTanggalLengkap(lastHistory.tanggalPeriode).toUpperCase();
-      rows.add([
-        IntCellValue(1),
-        TextCellValue('-'),
-        TextCellValue('SALDO AKHIR PER $historyDateStr'),
-        TextCellValue('Referensi Saldo Akhir Lalu'),
-        DoubleCellValue(0.0),
-        DoubleCellValue(0.0),
-        DoubleCellValue(lastHistory.saldoAkhir),
-      ]);
-      rowStyles.add(defaultStyle);
+      
+      for (var col = 0; col < 7; col++) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRowIndex));
+        cell.cellStyle = startRowStyle;
+      }
+      
+      final labelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex));
+      labelCell.value = TextCellValue('SALDO AKHIR PER $historyDateStr');
+      
+      sheet.merge(
+        CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex),
+        CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRowIndex),
+        customValue: TextCellValue('SALDO AKHIR PER $historyDateStr'),
+      );
+      
+      final saldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
+      saldoCell.value = DoubleCellValue(lastHistory.saldoAkhir);
+      
+      currentRowIndex++;
     }
 
     // 3. Baris "PEMASUKAN DARI FINANCE"
-    final financeRowNo = lastHistory != null ? 2 : 1;
-    rows.add([
-      IntCellValue(financeRowNo),
-      TextCellValue('-'),
-      TextCellValue('PEMASUKAN DARI FINANCE'),
-      TextCellValue('Saldo Awal Periode'),
-      DoubleCellValue(saldoAwalInput),
-      DoubleCellValue(0.0),
-      DoubleCellValue(saldoMulai),
-    ]);
-    rowStyles.add(startRowStyle);
+    for (var col = 0; col < 7; col++) {
+      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRowIndex));
+      cell.cellStyle = startRowStyle;
+    }
+    
+    final financeLabelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex));
+    financeLabelCell.value = TextCellValue('PEMASUKAN DARI FINANCE');
+    
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex),
+      CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRowIndex),
+      customValue: TextCellValue('PEMASUKAN DARI FINANCE'),
+    );
+    
+    final financePemCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRowIndex));
+    financePemCell.value = DoubleCellValue(saldoAwalInput);
+    
+    final financeSaldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
+    financeSaldoCell.value = DoubleCellValue(saldoMulai);
+    
+    currentRowIndex++;
 
-    // 4. Baris-baris transaksi
+    // 4. Baris-baris transaksi (No starts from 1)
     for (var i = 0; i < transaksiList.length; i++) {
       final t = transaksiList[i];
-      final no = (lastHistory != null ? 3 : 2) + i;
+      final no = i + 1;
       final katNama = kategoriMap[t.kategoriId] ?? '-';
-      rows.add([
-        IntCellValue(no),
-        TextCellValue(dateFormat.format(t.tanggal)),
-        TextCellValue(katNama),
-        TextCellValue(t.uraian),
-        DoubleCellValue(t.pemasukan),
-        DoubleCellValue(t.pengeluaran),
-        DoubleCellValue(t.saldoSetelah),
-      ]);
-      rowStyles.add(defaultStyle);
-    }
+      
+      final cellNo = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRowIndex));
+      cellNo.value = IntCellValue(no);
+      cellNo.cellStyle = defaultStyle;
 
-    // Write all rows
-    for (var r = 0; r < rows.length; r++) {
-      final rowData = rows[r];
-      final style = rowStyles[r];
-      final rowIndex = r + 1; // row 0 is header
-      for (var col = 0; col < rowData.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIndex));
-        cell.value = rowData[col];
-        cell.cellStyle = style;
+      final cellTgl = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex));
+      cellTgl.value = TextCellValue(dateFormat.format(t.tanggal));
+      cellTgl.cellStyle = defaultStyle;
+
+      final cellKat = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRowIndex));
+      cellKat.value = TextCellValue(katNama);
+      cellKat.cellStyle = defaultStyle;
+
+      final cellUraian = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRowIndex));
+      cellUraian.value = TextCellValue(t.uraian);
+      cellUraian.cellStyle = defaultStyle;
+
+      final cellPem = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRowIndex));
+      if (t.pemasukan > 0) {
+        cellPem.value = DoubleCellValue(t.pemasukan);
       }
+      cellPem.cellStyle = defaultStyle;
+
+      final cellPeng = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRowIndex));
+      if (t.pengeluaran > 0) {
+        cellPeng.value = DoubleCellValue(t.pengeluaran);
+      }
+      cellPeng.cellStyle = defaultStyle;
+
+      final cellSaldo = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
+      cellSaldo.value = DoubleCellValue(t.saldoSetelah);
+      cellSaldo.cellStyle = defaultStyle;
+
+      currentRowIndex++;
     }
 
     // 5. Totals Row
-    final totalRowIndex = rows.length + 1;
     final lastDate = transaksiList.isNotEmpty ? transaksiList.last.tanggal : DateTime.now();
     final totalRowDateStr = formatTanggalLengkap(lastDate).toUpperCase();
-    final totalRowData = [
-      TextCellValue(''),
-      TextCellValue(''),
-      TextCellValue('SALDO AKHIR PER $totalRowDateStr'),
-      TextCellValue(''),
-      DoubleCellValue(saldoAwalInput + totalPemasukan),
-      DoubleCellValue(totalPengeluaran),
-      DoubleCellValue(saldoAkhir),
-    ];
-
-    for (var col = 0; col < totalRowData.length; col++) {
-      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: totalRowIndex));
-      cell.value = totalRowData[col];
+    
+    for (var col = 0; col < 7; col++) {
+      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRowIndex));
       cell.cellStyle = totalRowStyle;
     }
+
+    final totalLabelCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex));
+    totalLabelCell.value = TextCellValue('SALDO AKHIR PER $totalRowDateStr');
+    
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRowIndex),
+      CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRowIndex),
+      customValue: TextCellValue('SALDO AKHIR PER $totalRowDateStr'),
+    );
+
+    final totalPemCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: currentRowIndex));
+    totalPemCell.value = DoubleCellValue(saldoAwalInput + totalPemasukan);
+
+    final totalPengCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: currentRowIndex));
+    totalPengCell.value = DoubleCellValue(totalPengeluaran);
+
+    final totalSaldoCell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: currentRowIndex));
+    totalSaldoCell.value = DoubleCellValue(saldoAkhir);
 
     // Auto-fit columns
     sheet.setColumnWidth(0, 8.0);  // No

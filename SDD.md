@@ -136,10 +136,18 @@ User tekan Export → repository.ambilDataUntukExport()
     salah satunya):
       1. Header kolom (biru)
       2. Baris referensi "SALDO AKHIR PER [tanggal periode sebelumnya]" — dari
-         history_saldo_akhir terakhir (skip baris ini kalau history masih kosong / first run)
-      3. Baris "PEMASUKAN DARI FINANCE" (hijau muda) — dari sesi_aktif
-      4. Baris-baris transaksi (urut tanggal)
-      5. Baris total "SALDO AKHIR PER [tanggal transaksi terakhir]" (kuning)
+         history_saldo_akhir terakhir (skip baris ini kalau history masih kosong / first run).
+         **Bukan baris transaksi**: No dikosongkan, sel Tanggal-sampai-Uraian di-MERGE jadi
+         satu sel berisi teks label ini, Pemasukan & Pengeluaran dikosongkan, hanya kolom Saldo
+         diisi nominal. Background hijau muda.
+      3. Baris "PEMASUKAN DARI FINANCE" (hijau muda) — dari sesi_aktif. Format sel sama seperti
+         poin 2 (No kosong, merge Tanggal-Uraian, Pengeluaran kosong), kolom Pemasukan diisi
+         nominal saldo awal, kolom Saldo diisi hasil penjumlahan.
+      4. Baris-baris transaksi (urut tanggal) — baris normal, No terisi nomor urut, tiap kolom
+         terisi sesuai field masing-masing (bukan merge).
+      5. Baris total "SALDO AKHIR PER [tanggal transaksi terakhir]" (kuning) — format sel sama
+         seperti poin 2 (No kosong, merge Tanggal-Uraian), kolom Pemasukan = Total Pemasukan,
+         Pengeluaran = Total Pengeluaran, Saldo = Saldo Akhir final.
   → simpan ke path Download dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
     (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
   → tampilkan opsi share
