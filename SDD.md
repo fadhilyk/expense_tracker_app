@@ -132,9 +132,9 @@ User isi form → validasi input (tanggal wajib, kategori wajib, salah satu dari
 User tekan Export → repository.ambilDataUntukExport()
   → ambil: history terakhir (baris referensi), sesi_aktif (baris Pemasukan dari Finance), semua transaksi, total agregat
   → ExcelService.generateXlsx(data) → susun sesuai layout template
-  → simpan ke path Download dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
+  → simpan ke folder sementara (cache/temp) dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
     (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
-  → tampilkan opsi share
+  → panggil Share Sheet untuk membagikan atau menyimpan file tersebut
 ```
 
 ### 5.4 Reset

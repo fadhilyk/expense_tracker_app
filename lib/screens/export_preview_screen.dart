@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/database.dart';
@@ -55,45 +54,14 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         saldoAkhir: saldoAkhir,
       );
 
-      // 2. Request Storage Permission
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        status = await Permission.storage.request();
-      }
-
-      // Check manage external storage for Android 11+
-      if (Platform.isAndroid && !status.isGranted) {
-        // If normal storage permission not granted, request manageExternalStorage on SDK 30+
-        var statusManage = await Permission.manageExternalStorage.status;
-        if (!statusManage.isGranted) {
-          statusManage = await Permission.manageExternalStorage.request();
-        }
-        status = statusManage;
-      }
-
-      File? savedFile;
-      if (status.isGranted) {
-        // 3. Save to Download directory
-        const downloadPath = '/storage/emulated/0/Download';
-        final downloadDir = Directory(downloadPath);
-        if (await downloadDir.exists()) {
-          final targetPath = p.join(downloadPath, p.basename(tempFile.path));
-          savedFile = await tempFile.copy(targetPath);
-        }
-      }
-
-      // 4. Share File
-      final XFile xFile = XFile(savedFile?.path ?? tempFile.path);
+      // 2. Share File
+      final XFile xFile = XFile(tempFile.path);
       await Share.shareXFiles([xFile], text: 'Laporan Pengeluaran Harian');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              savedFile != null
-                  ? 'Berhasil disimpan ke folder Download & siap dibagikan!'
-                  : 'File Excel siap dibagikan!',
-            ),
+          const SnackBar(
+            content: Text('File Excel siap dibagikan!'),
             backgroundColor: AppColors.emeraldPulse,
           ),
         );
@@ -140,7 +108,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
           ],
         ),
         content: Text(
-          'Terjadi kesalahan saat mengekspor: $message\n\nSilakan periksa izin penyimpanan aplikasi Anda.',
+          'Terjadi kesalahan saat mengekspor: $message',
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontFamily: 'PlusJakartaSans',
@@ -148,37 +116,14 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
             color: AppColors.slateGrey,
           ),
         ),
-        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsAlignment: MainAxisAlignment.center,
         actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
         actions: [
           SizedBox(
-            width: 110,
-            height: 48,
-            child: OutlinedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.slateGrey),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-              child: Text(
-                'OK',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.slateGrey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 110,
+            width: 120,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                openAppSettings();
-              },
+              onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emeraldPulse,
                 elevation: 0,
@@ -187,7 +132,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
                 ),
               ),
               child: Text(
-                'Pengaturan',
+                'OK',
                 style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
