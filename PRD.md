@@ -56,6 +56,12 @@ Setiap transaksi berisi:
 
 ### 7.4 Export ke Excel
 - Tombol "Export" menghasilkan file .xlsx dengan struktur kolom & tata letak identik dengan template yang sudah ada (header biru, baris highlight hijau untuk saldo awal, baris kuning untuk total di akhir).
+- Urutan baris di dalam file, persis sesuai template asli:
+  1. Header kolom (No, Tanggal, Keterangan, Uraian, Pemasukan, Pengeluaran, Saldo) — background biru.
+  2. Baris **"SALDO AKHIR PER [tanggal periode sebelumnya]"** — baris referensi dari `history_saldo_akhir` terakhir (kalau belum ada history sama sekali, baris ini boleh dilewati). Nominal saldo akhir sebelumnya ditampilkan di kolom Saldo.
+  3. Baris **"PEMASUKAN DARI FINANCE"** — background hijau muda, nominal Saldo Awal yang diinput di kolom Pemasukan, hasil penjumlahan (saldo mulai periode) di kolom Saldo.
+  4. Baris-baris transaksi berjalan, berurutan sesuai tanggal.
+  5. Baris **"SALDO AKHIR PER [tanggal transaksi terakhir]"** — background kuning, berisi Total Pemasukan, Total Pengeluaran, dan Saldo Akhir final.
 - File tersimpan ke folder Download HP, dengan nama `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx` (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`), dan bisa langsung dibagikan (share) ke WhatsApp/Drive/Email.
 - Catatan: belum ada file .xlsx asli sebagai rujukan pasti — layout warna/kolom mengikuti deskripsi & screenshot template yang sudah dibahas di dokumen ini. Kalau nanti hasilnya kurang pas dibanding template asli, akan disesuaikan ulang.
 

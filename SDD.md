@@ -130,14 +130,19 @@ User isi form → validasi input (tanggal wajib, kategori wajib, salah satu dari
 ### 5.3 Export
 ```
 User tekan Export → repository.ambilDataUntukExport()
-  → ambil: history terakhir (baris referensi), sesi_aktif (baris Pemasukan dari Finance), semua transaksi, total agregat
-  → ExcelService.generateXlsx(data) → susun sesuai layout template
-  → minta izin penyimpanan (MANAGE_EXTERNAL_STORAGE / storage)
-    → buat folder `LaporanPengeluaran` langsung di penyimpanan utama HP jika belum ada
-    → simpan file ke folder tersebut dengan nama `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
-      (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
-  → panggil Share Sheet (share_plus) untuk membagikan file tersebut
-  → tampilkan notifikasi/snackbar "Tersimpan di LaporanPengeluaran"
+  → ambil: history terakhir (baris referensi "SALDO AKHIR PER [tanggal]"), sesi_aktif
+    (baris "PEMASUKAN DARI FINANCE"), semua transaksi, total agregat
+  → ExcelService.generateXlsx(data) → susun baris SESUAI URUTAN INI (wajib, jangan dilewati
+    salah satunya):
+      1. Header kolom (biru)
+      2. Baris referensi "SALDO AKHIR PER [tanggal periode sebelumnya]" — dari
+         history_saldo_akhir terakhir (skip baris ini kalau history masih kosong / first run)
+      3. Baris "PEMASUKAN DARI FINANCE" (hijau muda) — dari sesi_aktif
+      4. Baris-baris transaksi (urut tanggal)
+      5. Baris total "SALDO AKHIR PER [tanggal transaksi terakhir]" (kuning)
+  → simpan ke path Download dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
+    (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
+  → tampilkan opsi share
 ```
 
 ### 5.4 Reset
@@ -196,5 +201,5 @@ assets/
 - **Belum ada history sama sekali (first run)**: `saldo_akhir_terakhir` dianggap 0, saldo mulai = saldo awal input murni.
 - **Saldo minus**: dibiarkan, tidak ada blocking validation, tapi UI menampilkan warna berbeda (merah) untuk memberi sinyal visual (lihat Design.md).
 - **Reset tanpa transaksi sama sekali**: tetap boleh reset — saldo akhir final = saldo_mulai, tanggal_periode = tanggal hari ini.
-- **Export gagal (permission storage ditolak / MANAGE_EXTERNAL_STORAGE ditolak)**: tampilkan dialog Izin Ditolak yang mengarahkan pengguna ke halaman Pengaturan aplikasi (App Settings) untuk memberikan izin secara manual.
+- **Export gagal (permission storage ditolak)**: tampilkan dialog error, arahkan ke pengaturan izin aplikasi.
 - **Kategori kosong/tidak dipilih**: tombol simpan transaksi disabled sampai kategori dipilih.

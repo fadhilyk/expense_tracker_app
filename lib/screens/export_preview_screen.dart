@@ -45,9 +45,13 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         for (final kat in kategoriList) kat.id: kat.nama
       };
 
+      final lastHistory = ref.read(historyListProvider).valueOrNull?.firstOrNull;
+
       // 1. Generate excel file in temp directory
       final tempFile = await ExcelExportService.generateXlsx(
+        saldoAwalInput: sesi.saldoAwalInput,
         saldoMulai: sesi.saldoMulai,
+        lastHistory: lastHistory,
         transaksiList: list.reversed.toList(), // reverse to chronologically ascending
         kategoriMap: kategoriMap,
         totalPemasukan: totalPem,
@@ -275,6 +279,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
     final listAsync = ref.watch(transaksiListProvider);
     final sesiAsync = ref.watch(sesiAktifStreamProvider);
     final kategoriAsync = ref.watch(kategoriListProvider);
+    final historyAsync = ref.watch(historyListProvider);
 
     return Scaffold(
       backgroundColor: AppColors.ledgerCream,
@@ -306,16 +311,23 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
                         data: (transaksiList) => kategoriAsync.when(
                           loading: () => const Center(child: CircularProgressIndicator()),
                           error: (e, _) => Center(child: Text('Error: $e')),
-                          data: (kategoriList) {
-                            final kategoriMap = {
-                              for (final kat in kategoriList) kat.id: kat.nama
-                            };
-                            return _buildPreviewTable(
-                              sesi.saldoMulai,
-                              transaksiList.reversed.toList(), // Chronologically ascending for report
-                              kategoriMap,
-                            );
-                          },
+                          data: (kategoriList) => historyAsync.when(
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (e, _) => Center(child: Text('Error: $e')),
+                            data: (historyList) {
+                              final kategoriMap = {
+                                for (final kat in kategoriList) kat.id: kat.nama
+                              };
+                              final lastHistory = historyList.firstOrNull;
+                              return _buildPreviewTable(
+                                sesi.saldoAwalInput,
+                                sesi.saldoMulai,
+                                lastHistory,
+                                transaksiList.reversed.toList(), // Chronologically ascending for report
+                                kategoriMap,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -356,29 +368,123 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
   }
 
   Widget _buildPreviewTable(
+    double saldoAwalInput,
     double saldoMulai,
+    HistorySaldoAkhirData? lastHistory,
     List<TransaksiData> transaksiList,
     Map<int, String> kategoriMap,
   ) {
     // Computes aggregate totals
-    double totalPem = saldoMulai;
+    double totalPem = saldoAwalInput;
     double totalPeng = 0.0;
     for (final t in transaksiList) {
       totalPem += t.pemasukan;
       totalPeng += t.pengeluaran;
     }
-    final saldoAkhir = totalPem - totalPeng;
+    final saldoAkhir = (lastHistory?.saldoAkhir ?? 0.0) + totalPem - totalPeng;
 
     final headerBg = AppColors.inkNavy;
     final startRowBg = const Color(0xFFD1EAE0);
     final totalRowBg = const Color(0xFFFCEFCB);
+
+    final List<TableRow> tableRows = [];
+
+    // 1. Header
+    tableRows.add(
+      TableRow(
+        decoration: BoxDecoration(color: headerBg),
+        children: [
+          _buildHeaderCell('No'),
+          _buildHeaderCell('Tanggal'),
+          _buildHeaderCell('Keterangan'),
+          _buildHeaderCell('Uraian'),
+          _buildHeaderCell('Pemasukan'),
+          _buildHeaderCell('Pengeluaran'),
+          _buildHeaderCell('Saldo'),
+        ],
+      ),
+    );
+
+    // 2. Baris "SALDO AKHIR PER [tanggal periode sebelumnya]"
+    if (lastHistory != null) {
+      final historyDateStr = formatTanggalLengkap(lastHistory.tanggalPeriode).toUpperCase();
+      tableRows.add(
+        TableRow(
+          decoration: const BoxDecoration(color: Colors.white),
+          children: [
+            _buildCell('1', alignCenter: true),
+            _buildCell('-'),
+            _buildCell('SALDO AKHIR PER $historyDateStr'),
+            _buildCell('Referensi Saldo Akhir Lalu'),
+            _buildCell(formatRupiah(0.0), isMono: true),
+            _buildCell(formatRupiah(0.0), isMono: true),
+            _buildCell(formatRupiah(lastHistory.saldoAkhir), isMono: true),
+          ],
+        ),
+      );
+    }
+
+    // 3. Baris "PEMASUKAN DARI FINANCE"
+    final financeRowNo = lastHistory != null ? 2 : 1;
+    tableRows.add(
+      TableRow(
+        decoration: BoxDecoration(color: startRowBg),
+        children: [
+          _buildCell(financeRowNo.toString(), alignCenter: true),
+          _buildCell('-'),
+          _buildCell('PEMASUKAN DARI FINANCE'),
+          _buildCell('Saldo Awal Periode'),
+          _buildCell(formatRupiah(saldoAwalInput), isMono: true),
+          _buildCell(formatRupiah(0.0), isMono: true),
+          _buildCell(formatRupiah(saldoMulai), isMono: true),
+        ],
+      ),
+    );
+
+    // 4. Transaksi rows
+    for (var i = 0; i < transaksiList.length; i++) {
+      final t = transaksiList[i];
+      final no = (lastHistory != null ? 3 : 2) + i;
+      tableRows.add(
+        TableRow(
+          decoration: const BoxDecoration(color: Colors.white),
+          children: [
+            _buildCell(no.toString(), alignCenter: true),
+            _buildCell(DateFormat('dd/MM/yyyy').format(t.tanggal)),
+            _buildCell(kategoriMap[t.kategoriId] ?? '-'),
+            _buildCell(t.uraian),
+            _buildCell(formatRupiah(t.pemasukan), isMono: true),
+            _buildCell(formatRupiah(t.pengeluaran), isMono: true),
+            _buildCell(formatRupiah(t.saldoSetelah), isMono: true),
+          ],
+        ),
+      );
+    }
+
+    // 5. Totals Row
+    final lastDate = transaksiList.isNotEmpty ? transaksiList.last.tanggal : DateTime.now();
+    final totalRowDateStr = formatTanggalLengkap(lastDate).toUpperCase();
+    tableRows.add(
+      TableRow(
+        decoration: BoxDecoration(color: totalRowBg),
+        children: [
+          _buildCell(''),
+          _buildCell(''),
+          _buildCell('SALDO AKHIR PER $totalRowDateStr', isBold: true),
+          _buildCell(''),
+          _buildCell(formatRupiah(totalPem), isMono: true, isBold: true),
+          _buildCell(formatRupiah(totalPeng), isMono: true, isBold: true),
+          _buildCell(formatRupiah(saldoAkhir), isMono: true, isBold: true),
+        ],
+      ),
+    );
 
     return Table(
       defaultColumnWidth: const FixedColumnWidth(120),
       columnWidths: const {
         0: FixedColumnWidth(50),  // No
         1: FixedColumnWidth(100), // Tanggal
-        2: FixedColumnWidth(150), // Keterangan
+        2: FixedColumnWidth(220), // Keterangan (increased width for date text!)
         3: FixedColumnWidth(180), // Uraian
         4: FixedColumnWidth(120), // Pemasukan
         5: FixedColumnWidth(120), // Pengeluaran
@@ -388,65 +494,7 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         color: AppColors.slateGrey.withValues(alpha: 0.3),
         width: 1,
       ),
-      children: [
-        // Header
-        TableRow(
-          decoration: BoxDecoration(color: headerBg),
-          children: [
-            _buildHeaderCell('No'),
-            _buildHeaderCell('Tanggal'),
-            _buildHeaderCell('Keterangan'),
-            _buildHeaderCell('Uraian'),
-            _buildHeaderCell('Pemasukan'),
-            _buildHeaderCell('Pengeluaran'),
-            _buildHeaderCell('Saldo'),
-          ],
-        ),
-
-        // Saldo Awal row
-        TableRow(
-          decoration: BoxDecoration(color: startRowBg),
-          children: [
-            _buildCell('1', alignCenter: true),
-            _buildCell('-'),
-            _buildCell('PEMASUKAN DARI FINANCE'),
-            _buildCell('Saldo Awal Periode'),
-            _buildCell(formatRupiah(saldoMulai), isMono: true),
-            _buildCell(formatRupiah(0), isMono: true),
-            _buildCell(formatRupiah(saldoMulai), isMono: true),
-          ],
-        ),
-
-        // Transaksi rows
-        for (var i = 0; i < transaksiList.length; i++) ...[
-          TableRow(
-            decoration: const BoxDecoration(color: Colors.white),
-            children: [
-              _buildCell((i + 2).toString(), alignCenter: true),
-              _buildCell(DateFormat('dd/MM/yyyy').format(transaksiList[i].tanggal)),
-              _buildCell(kategoriMap[transaksiList[i].kategoriId] ?? '-'),
-              _buildCell(transaksiList[i].uraian),
-              _buildCell(formatRupiah(transaksiList[i].pemasukan), isMono: true),
-              _buildCell(formatRupiah(transaksiList[i].pengeluaran), isMono: true),
-              _buildCell(formatRupiah(transaksiList[i].saldoSetelah), isMono: true),
-            ],
-          ),
-        ],
-
-        // Totals Row
-        TableRow(
-          decoration: BoxDecoration(color: totalRowBg),
-          children: [
-            _buildCell(''),
-            _buildCell(''),
-            _buildCell('TOTAL', isBold: true),
-            _buildCell(''),
-            _buildCell(formatRupiah(totalPem), isMono: true, isBold: true),
-            _buildCell(formatRupiah(totalPeng), isMono: true, isBold: true),
-            _buildCell(formatRupiah(saldoAkhir), isMono: true, isBold: true),
-          ],
-        ),
-      ],
+      children: tableRows,
     );
   }
 

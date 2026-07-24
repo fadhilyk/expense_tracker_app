@@ -4,10 +4,13 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import '../data/database.dart';
+import '../utils/formatters.dart';
 
 class ExcelExportService {
   static Future<File> generateXlsx({
+    required double saldoAwalInput,
     required double saldoMulai,
+    required HistorySaldoAkhirData? lastHistory,
     required List<TransaksiData> transaksiList,
     required Map<int, String> kategoriMap,
     required double totalPemasukan,
@@ -68,32 +71,44 @@ class ExcelExportService {
       cell.cellStyle = headerStyle;
     }
 
-    // Row 2: Saldo Awal (Pemasukan dari Finance)
     final dateFormat = DateFormat('dd/MM/yyyy');
-    
-    final saldoAwalRow = [
-      IntCellValue(1),
+    final List<List<CellValue>> rows = [];
+    final List<CellStyle> rowStyles = [];
+
+    // 2. Baris "SALDO AKHIR PER [tanggal periode sebelumnya]"
+    if (lastHistory != null) {
+      final historyDateStr = formatTanggalLengkap(lastHistory.tanggalPeriode).toUpperCase();
+      rows.add([
+        IntCellValue(1),
+        TextCellValue('-'),
+        TextCellValue('SALDO AKHIR PER $historyDateStr'),
+        TextCellValue('Referensi Saldo Akhir Lalu'),
+        DoubleCellValue(0.0),
+        DoubleCellValue(0.0),
+        DoubleCellValue(lastHistory.saldoAkhir),
+      ]);
+      rowStyles.add(defaultStyle);
+    }
+
+    // 3. Baris "PEMASUKAN DARI FINANCE"
+    final financeRowNo = lastHistory != null ? 2 : 1;
+    rows.add([
+      IntCellValue(financeRowNo),
       TextCellValue('-'),
       TextCellValue('PEMASUKAN DARI FINANCE'),
       TextCellValue('Saldo Awal Periode'),
-      DoubleCellValue(saldoMulai),
+      DoubleCellValue(saldoAwalInput),
       DoubleCellValue(0.0),
       DoubleCellValue(saldoMulai),
-    ];
+    ]);
+    rowStyles.add(startRowStyle);
 
-    for (var col = 0; col < saldoAwalRow.length; col++) {
-      final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 1));
-      cell.value = saldoAwalRow[col];
-      cell.cellStyle = startRowStyle;
-    }
-
-    // Transactions rows
+    // 4. Baris-baris transaksi
     for (var i = 0; i < transaksiList.length; i++) {
       final t = transaksiList[i];
-      final no = i + 2;
+      final no = (lastHistory != null ? 3 : 2) + i;
       final katNama = kategoriMap[t.kategoriId] ?? '-';
-      
-      final rowData = [
+      rows.add([
         IntCellValue(no),
         TextCellValue(dateFormat.format(t.tanggal)),
         TextCellValue(katNama),
@@ -101,23 +116,32 @@ class ExcelExportService {
         DoubleCellValue(t.pemasukan),
         DoubleCellValue(t.pengeluaran),
         DoubleCellValue(t.saldoSetelah),
-      ];
+      ]);
+      rowStyles.add(defaultStyle);
+    }
 
+    // Write all rows
+    for (var r = 0; r < rows.length; r++) {
+      final rowData = rows[r];
+      final style = rowStyles[r];
+      final rowIndex = r + 1; // row 0 is header
       for (var col = 0; col < rowData.length; col++) {
-        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: i + 2));
+        final cell = sheet.cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: rowIndex));
         cell.value = rowData[col];
-        cell.cellStyle = defaultStyle;
+        cell.cellStyle = style;
       }
     }
 
-    // Totals Row
-    final totalRowIndex = transaksiList.length + 2;
+    // 5. Totals Row
+    final totalRowIndex = rows.length + 1;
+    final lastDate = transaksiList.isNotEmpty ? transaksiList.last.tanggal : DateTime.now();
+    final totalRowDateStr = formatTanggalLengkap(lastDate).toUpperCase();
     final totalRowData = [
       TextCellValue(''),
       TextCellValue(''),
-      TextCellValue('TOTAL'),
+      TextCellValue('SALDO AKHIR PER $totalRowDateStr'),
       TextCellValue(''),
-      DoubleCellValue(totalPemasukan + saldoMulai),
+      DoubleCellValue(saldoAwalInput + totalPemasukan),
       DoubleCellValue(totalPengeluaran),
       DoubleCellValue(saldoAkhir),
     ];
