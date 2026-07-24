@@ -1,0 +1,58 @@
+name: expense_tracker_app
+description: "Aplikasi Pencatat Pengeluaran Pribadi"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.28
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  flutter_riverpod: ^2.6.1
+  intl: ^0.19.0
+  excel: ^4.0.6
+  permission_handler: ^11.3.1
+  share_plus: ^10.1.4
+  lucide_icons: ^0.257.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.22.1
+  build_runner: ^2.4.14
+  test: ^1.31.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces/Fraunces-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Fraunces/Fraunces-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Fraunces/Fraunces-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Fraunces/Fraunces-Black.ttf
+          weight: 900
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf
+          weight: 700
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono/IBMPlexMono-Regular.ttf
+        - asset: assets/fonts/IBMPlexMono/IBMPlexMono-Medium.ttf
+          weight: 500
