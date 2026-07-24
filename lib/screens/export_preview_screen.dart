@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
@@ -115,19 +116,84 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.ledgerCream,
-        title: const Text('Gagal Ekspor'),
-        content: Text('Terjadi kesalahan saat mengekspor: $message\n\nSilakan periksa izin penyimpanan aplikasi Anda.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Column(
+          children: [
+            Icon(
+              LucideIcons.alertTriangle,
+              color: AppColors.signalCoral,
+              size: 64,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Gagal Ekspor',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Fraunces',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.inkNavy,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Terjadi kesalahan saat mengekspor: $message\n\nSilakan periksa izin penyimpanan aplikasi Anda.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            color: AppColors.slateGrey,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              openAppSettings();
-            },
-            child: const Text('Buka Pengaturan'),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        actions: [
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.slateGrey),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'OK',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.slateGrey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                openAppSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.emeraldPulse,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Pengaturan',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),

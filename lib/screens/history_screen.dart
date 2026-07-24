@@ -1,10 +1,10 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/saldo_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
+import '../widgets/saldo_card.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -98,38 +98,7 @@ class HistoryScreen extends ConsumerWidget {
                       Positioned(
                         top: 0,
                         right: 0,
-                        child: Transform.rotate(
-                          angle: -8 * pi / 180,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: warnaStatus, width: 2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: warnaStatus, width: 1),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                aman ? 'AMAN' : 'DEFISIT',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: warnaStatus,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 10,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        child: StempelWidget(aman: aman),
                       ),
                     ],
                   ),

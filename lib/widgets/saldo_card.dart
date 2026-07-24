@@ -69,7 +69,7 @@ class SaldoCard extends StatelessWidget {
           Positioned(
             top: 0,
             right: 0,
-            child: _StempelWidget(aman: aman),
+            child: StempelWidget(aman: aman),
           ),
         ],
       ),
@@ -136,15 +136,15 @@ class _AnimatedSaldoState extends State<_AnimatedSaldo>
   }
 }
 
-class _StempelWidget extends StatefulWidget {
+class StempelWidget extends StatefulWidget {
   final bool aman;
-  const _StempelWidget({required this.aman});
+  const StempelWidget({super.key, required this.aman});
 
   @override
-  State<_StempelWidget> createState() => _StempelWidgetState();
+  State<StempelWidget> createState() => _StempelWidgetState();
 }
 
-class _StempelWidgetState extends State<_StempelWidget>
+class _StempelWidgetState extends State<StempelWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -164,7 +164,7 @@ class _StempelWidgetState extends State<_StempelWidget>
   }
 
   @override
-  void didUpdateWidget(_StempelWidget oldWidget) {
+  void didUpdateWidget(StempelWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.aman != widget.aman) {
       _controller.forward(from: 0);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/database.dart';
 import '../providers/transaksi_provider.dart';
 import '../theme/app_theme.dart';
@@ -22,45 +23,85 @@ class DetailTransaksiScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.ledgerCream,
-        title: Text(
-          'Hapus Transaksi',
-          style: AppTypography.displayMedium.copyWith(
-            color: AppColors.inkNavy,
-          ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        content: Text(
+        title: const Column(
+          children: [
+            Icon(
+              LucideIcons.trash2,
+              color: AppColors.signalCoral,
+              size: 64,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Hapus Transaksi',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Fraunces',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.inkNavy,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
           'Apakah Anda yakin ingin menghapus transaksi ini? Saldo berjalan setelah transaksi ini akan dihitung ulang.',
-          style: AppTypography.bodyMedium.copyWith(
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
             color: AppColors.slateGrey,
           ),
         ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.slateGrey,
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.slateGrey),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Batal',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.slateGrey,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              ref
-                  .read(transaksiRepositoryProvider)
-                  .hapusTransaksi(transaksi.id);
-              Navigator.pop(ctx); // Close dialog
-              Navigator.pop(context); // Close detail screen
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.signalCoral,
-              elevation: 0,
-            ),
-            child: Text(
-              'Hapus',
-              style: AppTypography.bodyMedium.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                ref
+                    .read(transaksiRepositoryProvider)
+                    .hapusTransaksi(transaksi.id);
+                Navigator.pop(ctx); // Close dialog
+                Navigator.pop(context); // Close detail screen
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.signalCoral,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Hapus',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
