@@ -132,9 +132,12 @@ User isi form → validasi input (tanggal wajib, kategori wajib, salah satu dari
 User tekan Export → repository.ambilDataUntukExport()
   → ambil: history terakhir (baris referensi), sesi_aktif (baris Pemasukan dari Finance), semua transaksi, total agregat
   → ExcelService.generateXlsx(data) → susun sesuai layout template
-  → simpan ke folder sementara (cache/temp) dengan nama file `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
-    (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
-  → panggil Share Sheet untuk membagikan atau menyimpan file tersebut
+  → minta izin penyimpanan (MANAGE_EXTERNAL_STORAGE / storage)
+    → buat folder `LaporanPengeluaran` langsung di penyimpanan utama HP jika belum ada
+    → simpan file ke folder tersebut dengan nama `Laporan_Pengeluaran_[dd-MM-yyyy].xlsx`
+      (contoh: `Laporan_Pengeluaran_23-07-2026.xlsx`, tanggal mengikuti tanggal saat export dilakukan)
+  → panggil Share Sheet (share_plus) untuk membagikan file tersebut
+  → tampilkan notifikasi/snackbar "Tersimpan di LaporanPengeluaran"
 ```
 
 ### 5.4 Reset
@@ -193,5 +196,5 @@ assets/
 - **Belum ada history sama sekali (first run)**: `saldo_akhir_terakhir` dianggap 0, saldo mulai = saldo awal input murni.
 - **Saldo minus**: dibiarkan, tidak ada blocking validation, tapi UI menampilkan warna berbeda (merah) untuk memberi sinyal visual (lihat Design.md).
 - **Reset tanpa transaksi sama sekali**: tetap boleh reset — saldo akhir final = saldo_mulai, tanggal_periode = tanggal hari ini.
-- **Export gagal (permission storage ditolak)**: tampilkan dialog error, arahkan ke pengaturan izin aplikasi.
+- **Export gagal (permission storage ditolak / MANAGE_EXTERNAL_STORAGE ditolak)**: tampilkan dialog Izin Ditolak yang mengarahkan pengguna ke halaman Pengaturan aplikasi (App Settings) untuk memberikan izin secara manual.
 - **Kategori kosong/tidak dipilih**: tombol simpan transaksi disabled sampai kategori dipilih.

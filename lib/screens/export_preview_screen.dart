@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/database.dart';
@@ -54,14 +55,49 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         saldoAkhir: saldoAkhir,
       );
 
-      // 2. Share File
-      final XFile xFile = XFile(tempFile.path);
+      File savedFile = tempFile;
+      bool isSavedToPublicFolder = false;
+
+      if (Platform.isAndroid) {
+        // Request Storage Permission
+        var status = await Permission.manageExternalStorage.status;
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+        }
+
+        if (!status.isGranted) {
+          // Try fallback
+          var fallbackStatus = await Permission.storage.request();
+          if (!fallbackStatus.isGranted) {
+            if (mounted) {
+              _showPermissionErrorDialog();
+            }
+            return;
+          }
+        }
+
+        // Create LaporanPengeluaran directory
+        const folderPath = '/storage/emulated/0/LaporanPengeluaran';
+        final dir = Directory(folderPath);
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+
+        final targetPath = p.join(folderPath, p.basename(tempFile.path));
+        savedFile = await tempFile.copy(targetPath);
+        isSavedToPublicFolder = true;
+      }
+
+      // Share File
+      final XFile xFile = XFile(savedFile.path);
       await Share.shareXFiles([xFile], text: 'Laporan Pengeluaran Harian');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('File Excel siap dibagikan!'),
+          SnackBar(
+            content: Text(isSavedToPublicFolder
+                ? 'Tersimpan di LaporanPengeluaran'
+                : 'File Excel siap dibagikan!'),
             backgroundColor: AppColors.emeraldPulse,
           ),
         );
@@ -77,6 +113,95 @@ class _ExportPreviewScreenState extends ConsumerState<ExportPreviewScreen> {
         });
       }
     }
+  }
+
+  void _showPermissionErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.ledgerCream,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Column(
+          children: [
+            Icon(
+              LucideIcons.alertTriangle,
+              color: AppColors.signalCoral,
+              size: 64,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Izin Ditolak',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Fraunces',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.inkNavy,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Aplikasi membutuhkan izin akses semua berkas untuk menyimpan laporan langsung ke folder LaporanPengeluaran.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            fontSize: 15,
+            color: AppColors.slateGrey,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actionsPadding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        actions: [
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.slateGrey),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Batal',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.slateGrey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 110,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                openAppSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.emeraldPulse,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: Text(
+                'Pengaturan',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showErrorDialog(String message) {
